@@ -1,0 +1,9 @@
+name: 'NPM Package Popularity Checker'
+description: 'Checks npm package popularity based on weekly download counts.'
+inputs:
+  packages:
+    description: 'Comma-separated list of npm packages'
+    required: true
+runs:
+  using: 'node16'
+  main: 'index.js'
