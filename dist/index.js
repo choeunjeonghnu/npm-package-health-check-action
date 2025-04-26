@@ -31578,26 +31578,36 @@ async function checkNpmDownloads(packageName) {
     }
 }
 
+// 🔧 GitHub 저장소 경로 정규화 함수
+function extractGitHubRepoPath(repoInfo) {
+    if (!repoInfo || !repoInfo.url) return null;
+
+    let url = repoInfo.url;
+    url = url.replace(/^git\+/, '').replace(/\.git$/, '');
+
+    const githubIndex = url.indexOf('github.com/');
+    if (githubIndex === -1) return null;
+
+    return url.substring(githubIndex + 'github.com/'.length);
+}
+
 // 🛠️ 유지보수 상태 확인 함수
 async function checkMaintenanceStatus(packageName) {
     try {
         const res = await fetch(`https://registry.npmjs.org/${packageName}`);
         if (!res.ok) {
-            core.warning(`⚠️ "${packageName}" 메타데이터 조회 실패`);
+            core.warning(`⚠️ "${packageName}": 메타데이터 조회 실패`);
             return;
         }
         const metadata = await res.json();
-        const repoInfo = metadata.repository;
+        const repoPath = extractGitHubRepoPath(metadata.repository);
 
-        if (!repoInfo || !repoInfo.url.includes('github.com')) {
+        if (!repoPath) {
             core.warning(`❌ "${packageName}": GitHub 저장소 정보 없음 (유지보수 상태 확인 불가)`);
             return;
         }
 
-        // GitHub 저장소 경로 추출
-        const repoUrl = repoInfo.url.replace('git+', '').replace('.git', '').replace('https://github.com/', '').trim();
-        const apiUrl = `https://api.github.com/repos/${repoUrl}`;
-
+        const apiUrl = `https://api.github.com/repos/${repoPath}`;
         const githubRes = await fetch(apiUrl);
         if (!githubRes.ok) {
             core.warning(`⚠️ "${packageName}": GitHub API 조회 실패`);
