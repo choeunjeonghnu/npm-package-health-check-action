@@ -1,0 +1,10 @@
+name: Test NPM Popularity Checker
+
+on: [push]
+
+jobs:
+  run-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
